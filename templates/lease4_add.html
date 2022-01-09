@@ -1,0 +1,24 @@
+<doctype html>
+    <title>New Lease4</title>
+    <h2>New Lease4</h2>
+    
+    {% from "_formhelpers.html" import render_field %}
+    <form method=post>
+        {{ form.csrf_token }}
+        {% if form.csrf_token.errors %}
+            <div class="warning">You have submitted an invalid CSRF token</div>
+        {% endif %}        
+        <dl>
+            {{ render_field(form.address) }}
+            {{ render_field(form.hwaddr) }}
+            {{ render_field(form.client_id) }}
+            {{ render_field(form.valid_lifetime) }}
+            {{ render_field(form.subnet_id) }}
+            {{ render_field(form.fqdn_fwd) }}
+            {{ render_field(form.fqdn_rev) }}
+            {{ render_field(form.hostname) }}
+            {{ render_field(form.state) }}
+            {{ render_field(form.user_context) }}
+        </dl>
+        <p><input type=submit value=Submit>
+    </form>
