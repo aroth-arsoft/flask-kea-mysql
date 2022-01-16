@@ -1,5 +1,6 @@
 """Form object declaration."""
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileRequired
 from wtforms import Field, StringField, SubmitField, TextAreaField, BooleanField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length, NumberRange
 from wtforms.widgets import TextInput
@@ -76,6 +77,16 @@ Lease4Form.fqdn_fwd.validators = []
 Lease4Form.fqdn_rev.validators = []
 
 k = 0;
+
+class LeaseUploadForm(FlaskForm):
+    file = FileField(validators=[FileRequired()])
+    file_type = SelectField(
+        'Type',
+        [DataRequired()],
+        choices=LeaseFileTypeEnum_choices
+    )
+
+
 
 class LeaseForm():
     """Contact form."""

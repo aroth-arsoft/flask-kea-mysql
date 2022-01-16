@@ -6,6 +6,7 @@ from sqlalchemy.sql import func
 import enum
 import socket
 import struct
+from isc_dhcp_leases import Lease as DhcpLease4, Lease6 as DhcpLease6
 
 ma = Marshmallow()
 db = SQLAlchemy()
@@ -40,6 +41,16 @@ LeaseStateEnum_choices = \
     [(LeaseStateEnum.default, 'default'), (LeaseStateEnum.declined, 'declined'), (LeaseStateEnum.expired_reclaimed, 'expired') ]    
 LeaseStateEnum_choices_dict = \
     { LeaseStateEnum.default: 'default', LeaseStateEnum.declined:'declined', LeaseStateEnum.expired_reclaimed:'expired' }   
+
+class LeaseFileTypeEnum(enum.IntEnum):
+    unknown = 0
+    dhcp_v4 = 1
+    dhcp_v6 = 2
+
+LeaseFileTypeEnum_choices = \
+    [(LeaseFileTypeEnum.unknown, 'unknown'), (LeaseFileTypeEnum.dhcp_v4, 'dhcp_v4'), (LeaseFileTypeEnum.dhcp_v6, 'dhcp_v6') ]    
+LeaseFileTypeEnum_choices_dict = \
+    { LeaseFileTypeEnum.unknown: 'unknown', LeaseFileTypeEnum.dhcp_v4:'dhcp_v4', LeaseFileTypeEnum.dhcp_v6:'dhcp_v6' }   
 
 def int_to_ipv4(addr):
     try:
@@ -99,6 +110,26 @@ class Lease4(db.Model):
     def __init__(self, *args):
         super(Lease4, self).__init__(*args)
 
+def create_dhcp_lease(lease, obj=None):
+    if isinstance(lease, DhcpLease4):
+        if obj is None:
+            obj = Lease4()
+        obj.hwaddr = hwaddr_to_bin(lease.ethernet)
+        obj.address = ipv4_to_int(lease.ip)
+        obj.hostname = lease.hostname
+        if lease.binding_state == 'active':
+            obj.state = int(LeaseStateEnum.default)
+        elif lease.binding_state == 'free' or lease.binding_state == 'abandoned' or lease.binding_state == 'backup':
+            obj.state = int(LeaseStateEnum.expired_reclaimed)
+        obj.expire = lease.end
+
+    elif isinstance(lease, DhcpLease6):
+        ret = None
+    else:
+        ret = None
+    return obj
+
+from isc_dhcp_leases import Lease as DhcpLease
 
 class User(db.Model):
     __tablename__ = 'user'

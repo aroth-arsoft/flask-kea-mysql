@@ -2,6 +2,10 @@ from flask import Blueprint, Flask, render_template
 from flask import request, redirect
 from flask_restful import Api
 from flask_wtf.csrf import CSRFProtect
+from werkzeug.utils import secure_filename
+from isc_dhcp_leases import Lease as DhcpLease, IscDhcpLeases
+import os
+import tempfile
 from Model import Lease4
 from Model import db
 from forms import *
@@ -49,6 +53,30 @@ app = create_app("config")
 @app.route("/",methods=['GET'])
 def home():
     return redirect('/lease4')
+
+
+def process_lease_file(db, filename):
+    ret = True
+    leases = IscDhcpLeases(filename)
+    for hwaddr, lease in leases.get_current().items():
+        obj = Lease4.query.filter_by(address=hwaddr).first()
+        obj = create_dhcp_lease(lease, obj=obj)
+        db.session.add(obj)
+        db.session.commit()
+    return ret
+
+@app.route('/lease4/upload', methods=['GET', 'POST'])
+def lease4_upload():
+    form = LeaseUploadForm()
+
+    if form.validate_on_submit():
+        f = form.file.data
+        tmp = tempfile.NamedTemporaryFile()
+        f.save(tmp)
+        process_lease_file(db, tmp.name)
+        return redirect('/lease4')
+
+    return render_template('lease_upload.html', form=form)    
 
 @app.route("/lease4",methods=['POST', 'GET'])
 def lease4():

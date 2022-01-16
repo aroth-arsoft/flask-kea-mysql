@@ -12,3 +12,4 @@ PyMySQL==1.0.2
 Flask-WTF==1.0.0
 Flask-Table==0.5.0
 WTForms-SQLAlchemy==0.3
+isc_dhcp_leases==0.9.1

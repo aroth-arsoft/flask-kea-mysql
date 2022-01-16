@@ -1,0 +1,17 @@
+<doctype html>
+    <title>Upload Lease file</title>
+    <h2>Upload Lease file</h2>
+    
+    {% from "_formhelpers.html" import render_field %}
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        {% if form.csrf_token.errors %}
+            <div class="warning">You have submitted an invalid CSRF token</div>
+        {% endif %}        
+        <dl>
+            {{ render_field(form.file) }}
+            {{ render_field(form.file_type) }}
+        </dl>
+        <p><input type=submit value=Submit>
+    </form>
+
